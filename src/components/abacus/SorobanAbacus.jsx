@@ -4,6 +4,14 @@ import { EARTH_BEADS_PER_ROD, nextEarthCount, valueToRods } from '../../utils/ab
 import { useAbacusState } from '../../hooks/useAbacusState';
 import { useBeadSound } from '../../hooks/useBeadSound';
 
+// Each earth bead has two fixed resting positions: "active" (touching the
+// bar, position = slot) and "inactive" (resting away from the bar,
+// position = slot + 1). The zone therefore needs room for 5 bead-heights
+// of travel, not 4 — sizing it at 4 caused inactive beads to render
+// clustered past the bottom edge, which is what made every tap near the
+// bottom of a rod register as "activate everything".
+const EARTH_ZONE_UNITS = 5;
+
 /**
  * SorobanAbacus
  *
@@ -81,9 +89,7 @@ const SorobanAbacus = forwardRef(function SorobanAbacus(
   const handleEarthPointer = (rodIndex, e, isFinal) => {
     const zoneEl = e.currentTarget;
     const rect = zoneEl.getBoundingClientRect();
-    const y = e.clientY - rect.top;
-    const slotHeight = rect.height / EARTH_BEADS_PER_ROD;
-    const slotIndex = Math.floor(y / slotHeight);
+    const slotIndex = resolveEarthSlot(e, rodIndex, rect);
 
     if (!dragState.current || dragState.current.rod !== rodIndex) {
       dragState.current = { rod: rodIndex, initialCount: rods[rodIndex].earth };
@@ -109,6 +115,24 @@ const SorobanAbacus = forwardRef(function SorobanAbacus(
     } else {
       preview(updater);
     }
+  };
+
+  // Once a pointer is captured (mid-drag), the browser reports every
+  // move/up event's target as the *capturing* element, not whatever the
+  // finger is actually over — so plain event.currentTarget geometry math
+  // can't tell which bead you're touching. We instead look up the real
+  // element under the pointer via elementFromPoint and read its own
+  // slot index straight off its data attribute. Geometry math is only a
+  // fallback for taps that land in the small gap between beads.
+  const resolveEarthSlot = (e, rodIndex, fallbackRect) => {
+    const hit = document.elementFromPoint(e.clientX, e.clientY);
+    const beadEl = hit && hit.closest ? hit.closest('[data-earth-slot]') : null;
+    if (beadEl && Number(beadEl.dataset.earthRod) === rodIndex) {
+      return Number(beadEl.dataset.earthSlot);
+    }
+    const y = e.clientY - fallbackRect.top;
+    const unit = y / (fallbackRect.height / EARTH_ZONE_UNITS);
+    return Math.max(0, Math.min(EARTH_BEADS_PER_ROD - 1, Math.floor(unit)));
   };
 
   const pointerHandlers = (zone, rodIndex) => ({
@@ -235,7 +259,7 @@ const SorobanAbacus = forwardRef(function SorobanAbacus(
                   <div
                     {...pointerHandlers('earth', i)}
                     className={`relative w-full touch-none cursor-pointer ${isHighlighted ? 'rounded-lg ring-2 ring-saffron/70' : ''}`}
-                    style={{ height: 'calc(var(--bead) * 4.2)' }}
+                    style={{ height: 'calc(var(--bead) * ' + EARTH_ZONE_UNITS + ')' }}
                     tabIndex={0}
                     role="group"
                     aria-label={`Rod ${rodCount - i} earth beads, value ${rod.earth}`}
@@ -258,15 +282,20 @@ const SorobanAbacus = forwardRef(function SorobanAbacus(
                     {Array.from({ length: EARTH_BEADS_PER_ROD }).map((_, slot) => {
                       const active = slot < rod.earth;
                       // Active beads stack contiguously touching the bar (top of zone).
-                      // Inactive beads stack contiguously resting at the bottom of the zone.
+                      // Inactive beads sit exactly one bead-height further down —
+                      // this fixed offset (not a function of how many beads are
+                      // active) is what keeps every bead's resting spot distinct
+                      // and tappable, matching a real soroban's physical layout.
                       const top = active
                         ? `calc(var(--bead) * ${slot})`
-                        : `calc(var(--bead) * ${4 - rod.earth + (slot - rod.earth)})`;
+                        : `calc(var(--bead) * ${slot + 1})`;
                       return (
                         <Bead
                           key={slot}
                           top={top}
                           highlighted={isHighlighted && slot === rod.earth}
+                          data-earth-slot={slot}
+                          data-earth-rod={i}
                         />
                       );
                     })}
@@ -306,9 +335,10 @@ const SorobanAbacus = forwardRef(function SorobanAbacus(
   );
 });
 
-function Bead({ top, highlighted }) {
+function Bead({ top, highlighted, ...rest }) {
   return (
     <motion.div
+      {...rest}
       className={`absolute left-1/2 rounded-[35%] bg-gradient-to-br from-teal-light via-teal to-teal-dark shadow-bead ${
         highlighted ? 'ring-2 ring-saffron animate-pulseGlow' : ''
       }`}
