@@ -1,0 +1,14 @@
+# Cloudflare Pages configuration for ACAD Abacus.
+#
+# Phase 4 (this delivery) needs the D1 database for auth (users,
+# students, password_resets tables), so the binding below is active.
+# You still need to create the database and set secrets — see README.md.
+
+name = "acad-abacus"
+compatibility_date = "2024-09-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "acad-abacus"
+database_id = "REPLACE_WITH_DATABASE_ID"
