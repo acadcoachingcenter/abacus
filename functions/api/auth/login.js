@@ -16,10 +16,17 @@ export async function onRequestPost({ request, env }) {
   if (!email || !password) return json({ error: 'Email and password are required' }, 400);
 
   const user = await env.DB.prepare(
-    'SELECT id, name, email, password_hash, role, disabled FROM users WHERE email = ?'
-  )
-    .bind(email)
-    .first();
+  `SELECT u.id, u.name, u.email, u.password_hash, u.role, u.disabled,
+          s.age, s.grade, s.current_level, s.streak_days, s.best_score,
+          s.total_practice_seconds, s.last_activity_at
+   FROM users u
+   LEFT JOIN students s ON s.id = u.id
+   WHERE u.email = ?`
+)
+  .bind(email)
+  .first();
+
+
 
   // Same generic error whether the email doesn't exist or the password is
   // wrong — don't let the response shape reveal which accounts exist.
@@ -31,8 +38,22 @@ export async function onRequestPost({ request, env }) {
   const token = await signSession({ sub: user.id, role: user.role }, env.SESSION_SECRET, SESSION_SECONDS);
 
   return json(
-    { user: { id: user.id, name: user.name, email: user.email, role: user.role } },
-    200,
-    { 'Set-Cookie': buildSessionCookie(token, SESSION_SECONDS) }
-  );
+  {
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      age: user.age,
+      grade: user.grade,
+      current_level: user.current_level,
+      streak_days: user.streak_days,
+      best_score: user.best_score,
+      total_practice_seconds: user.total_practice_seconds,
+      last_activity_at: user.last_activity_at
+    }
+  },
+  200,
+  { 'Set-Cookie': buildSessionCookie(token, SESSION_SECONDS) }
+);
 }
