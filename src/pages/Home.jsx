@@ -43,12 +43,12 @@ export default function Home() {
             >
               Start Learning
             </a>
-            <a
-              href="#roadmap"
+            <Link
+              to="/learn"
               className="px-6 py-3.5 rounded-2xl bg-transparent text-rosewood font-bold font-display border-2 border-rosewood/15 hover:border-rosewood/30 transition-colors"
             >
               See the curriculum
-            </a>
+            </Link>
           </div>
         </motion.div>
 
@@ -82,9 +82,10 @@ export default function Home() {
           </h2>
           <div className="grid sm:grid-cols-3 gap-5">
             {roadmap.map((stage) => (
-              <div
+              <Link
+                to={`/learn#${stage.level.toLowerCase()}`}
                 key={stage.level}
-                className="bg-white rounded-3xl p-6 border border-sandalwood/25 shadow-sm"
+                className="bg-white rounded-3xl p-6 border border-sandalwood/25 shadow-sm hover:border-saffron/60 hover:shadow-md transition-all block"
               >
                 <h3 className="font-display font-bold text-lg text-teal-dark mb-3">
                   {stage.level}
@@ -97,8 +98,23 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-              </div>
+                <span className="inline-block mt-4 text-xs font-bold text-teal font-display">
+                  Start {stage.level.toLowerCase()} lessons →
+                </span>
+              </Link>
             ))}
+          </div>
+
+          <div className="flex flex-wrap gap-3 justify-center mt-8">
+            <Link to="/flash" className="px-5 py-2.5 rounded-xl bg-white border border-sandalwood/30 text-rosewood font-semibold font-display text-sm hover:border-saffron/60">
+              ⚡ Flash Anzan
+            </Link>
+            <Link to="/challenge" className="px-5 py-2.5 rounded-xl bg-white border border-sandalwood/30 text-rosewood font-semibold font-display text-sm hover:border-saffron/60">
+              ⏱ Speed Challenge
+            </Link>
+            <Link to="/practice" className="px-5 py-2.5 rounded-xl bg-white border border-sandalwood/30 text-rosewood font-semibold font-display text-sm hover:border-saffron/60">
+              🧮 Free Practice
+            </Link>
           </div>
         </div>
       </section>
@@ -118,8 +134,10 @@ function Header() {
         <span className="font-display font-bold text-rosewood text-lg">{branding.productName}</span>
       </div>
       <nav className="hidden sm:flex items-center gap-6 text-sm font-semibold font-body text-rosewood/70">
-        <a href="#roadmap" className="hover:text-rosewood">Curriculum</a>
-        <a href="#try-it" className="hover:text-rosewood">Try it</a>
+        <Link to="/learn" className="hover:text-rosewood">Curriculum</Link>
+        <Link to="/practice" className="hover:text-rosewood">Practice</Link>
+        <Link to="/flash" className="hover:text-rosewood">Flash Anzan</Link>
+        <Link to="/challenge" className="hover:text-rosewood">Challenge</Link>
         <Link to="/login" className="hover:text-rosewood">Log in</Link>
       </nav>
       <Link

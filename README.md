@@ -4,10 +4,36 @@ Interactive Soroban abacus training app for ACAD. Domain: **abacus.acadapp.in**
 
 ## What's in this delivery
 
-This delivery covers **Phase 1, 2, and 4** (auth + dashboard) of the build
-plan. Phase 4 needed real password hashing and a database, so it's the
-first phase that requires D1 and a couple of secrets — everything below
-walks through setting that up.
+This delivery covers **Phase 1, 2, 3, and 4** of the build plan.
+
+**Bug fixes (post-launch):**
+- Lower (earth) beads were resting past the bottom edge of each rod due to a
+  positioning formula error, causing taps near the bottom to activate all 4
+  beads instead of the one touched. Fixed — each bead now has an exact,
+  distinct resting position, and taps match the real DOM element under
+  your finger.
+- Cloudflare Pages was routing JS/CSS asset requests through the Functions
+  runtime (because `functions/api/` exists for auth), which returned
+  `index.html` instead of the real files. Fixed with `public/_routes.json`
+  restricting Functions to `/api/*` only.
+- Missing PWA icons (`icon-192.png`, `icon-512.png`) — generated.
+
+**Phase 3 (this update):**
+- Learn → Watch → Practice → Test lesson engine (`/learn`, `/learn/:lessonId`)
+  with 15 real lessons across Beginner/Intermediate/Advanced — each one
+  actually teaches, demonstrates on the abacus, has you practice, then
+  tests you with generated questions
+- Practice generator (`/practice`) covering all 8 categories from the
+  spec — representation, addition, subtraction, multiplication, division,
+  mixed, complement, and speed — at easy/medium/hard/expert difficulty,
+  fully unlimited (procedurally generated, not a fixed question bank)
+- Flash Anzan (`/flash`) — configurable digits, terms per question, question
+  count, 5 speed presets (2.0s down to 0.3s), addition/subtraction/mixed modes
+- Speed Challenge (`/challenge`) — 60-second timed mode with live score,
+  streak, and a results screen showing accuracy, best streak, and average
+  time per question
+- Homepage and nav now link into all of the above instead of showing a
+  static topic list
 
 - ✅ Fully working, realistic Soroban abacus (1 heaven bead + 4 earth beads
   per rod), physically accurate bead-stacking behavior
@@ -42,8 +68,8 @@ cleanly, but these are **not implemented yet**:
 
 | Phase | Feature | Status |
 |---|---|---|
-| 3 | Learn → Watch → Practice → Test lesson engine, full hand/pointer demo animations, practice generator, Flash Anzan, Speed Challenge | Not started |
-| 5 | D1 progress tracking (lessons/exercises/sessions actually writing to the DB) | Schema written, `users`/`students`/`password_resets` tables live; progress tables not wired to any UI yet |
+| 3 | Lesson engine, practice generator, Flash Anzan, Speed Challenge | ✅ Built (this delivery). Full hand/mouse-pointer choreography (spec section 3) is still a lighter-weight preview via `AbacusDemoPanel`/lesson "Watch" step, not frame-by-frame animated guidance |
+| 5 | D1 progress tracking (lessons/exercises/sessions actually writing to the DB) | Schema written, `users`/`students`/`password_resets` tables live; progress tables not wired to any UI yet — practice/test results aren't saved anywhere yet |
 | 6 | Admin dashboard, class management, curriculum CMS | Not started |
 | 7 | Classroom projector mode, achievements | Not started |
 | 8 | Service worker offline sync | Manifest + `_redirects` in place, no service worker yet |

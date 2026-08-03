@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "description": "Only /api/* goes through Pages Functions. Everything else (JS/CSS bundles, icons, manifest, and the SPA's own client-side routes) is served as a plain static file or falls through to the _redirects SPA rule. Without this, Cloudflare Pages can route asset requests through the Functions runtime too, which is what caused the JS/CSS MIME type errors.",
+  "include": ["/api/*"],
+  "exclude": ["/assets/*", "/icons/*", "/sounds/*", "/manifest.webmanifest", "/favicon.svg"]
+}
